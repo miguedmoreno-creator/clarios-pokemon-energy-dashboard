@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clarios - Mapa Interactivo</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- HUD Superior Izquierdo: Estado y Posicion -->
+  <div class="hud-container">
+    <div class="hud-card">
+      <div class="hud-header">
+        <span class="status-dot"></span>
+        <h1 class="hud-title">CLARIOS - MAPA</h1>
+      </div>
+      <div class="hud-info">
+        <div class="info-item">
+          <span class="label">Posicion:</span>
+          <span id="pos-display" class="value">X: 21, Y: 58</span>
+        </div>
+        <div class="info-item">
+          <span class="label" style="color: #00ff88;">Ultimo Clic:</span>
+          <span id="click-display" class="value" style="color: #00ff88;">Haz clic en el mapa</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Controles:</span>
+          <span class="value">Flechas / WASD</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel Lista de Compras - Guia de NPCs -->
+  <div id="npc-list-panel" class="npc-list-panel hidden-panel">
+    <div class="npc-list-header">
+      <span class="npc-list-icon">&#x1F4CB;</span>
+      <span class="npc-list-title">GUIA DE EXPERTOS</span>
+    </div>
+    <p class="npc-list-subtitle">Selecciona un experto para visitarlo</p>
+    <div class="npc-list-items">
+      <button class="npc-list-btn" id="btn-npc-0">
+        <canvas class="npc-btn-canvas" id="canvas-npc-0" width="32" height="32"></canvas>
+        <div class="npc-btn-info">
+          <span class="npc-btn-name">Prof. Oak</span>
+          <span class="npc-btn-role">Control Predictivo - SLSQP MPC</span>
+        </div>
+        <span class="npc-btn-arrow">&#x2192;</span>
+      </button>
+      <button class="npc-list-btn" id="btn-npc-1">
+        <canvas class="npc-btn-canvas" id="canvas-npc-1" width="32" height="32"></canvas>
+        <div class="npc-btn-info">
+          <span class="npc-btn-name">Leaf</span>
+          <span class="npc-btn-role">Peak Shaving - HiGHS MILP</span>
+        </div>
+        <span class="npc-btn-arrow">&#x2192;</span>
+      </button>
+      <button class="npc-list-btn" id="btn-npc-2">
+        <canvas class="npc-btn-canvas" id="canvas-npc-2" width="32" height="32"></canvas>
+        <div class="npc-btn-info">
+          <span class="npc-btn-name">Erika</span>
+          <span class="npc-btn-role">Curva de Carga - What-If Yumbo</span>
+        </div>
+        <span class="npc-btn-arrow">&#x2192;</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Boton para mostrar/ocultar panel -->
+  <button id="toggle-npc-panel" class="toggle-npc-btn">
+    <span>&#x1F9ED; EXPERTOS</span>
+  </button>
+
+  <!-- Dialogo / Panel de Informacion del NPC -->
+  <div id="npc-dialog" class="npc-dialog hidden">
+    <div class="npc-dialog-inner">
+      <div class="npc-dialog-header">
+        <canvas id="npc-dialog-avatar" width="64" height="64"></canvas>
+        <div class="npc-dialog-titles">
+          <span id="npc-dialog-name" class="npc-dialog-name"></span>
+          <span id="npc-dialog-role" class="npc-dialog-role"></span>
+        </div>
+        <button class="npc-dialog-close" id="btn-close-dialog">&#x2715;</button>
+      </div>
+      <p id="npc-dialog-text" class="npc-dialog-text"></p>
+      <div id="npc-dialog-chart" class="npc-dialog-chart"></div>
+    </div>
+  </div>
+
+  <main class="canvas-wrap">
+    <canvas id="gameCanvas"></canvas>
+  </main>
+
+  <script src="./game.js"></script>
+</body>
+</html>

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>NPC Sprite Editor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background: #16213e;
+      padding: 12px 24px;
+      border-bottom: 2px solid #0f3460;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      font-size: 18px;
+      color: #e94560;
+      white-space: nowrap;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: #0f3460;
+      color: #e0e0e0;
+      border: 1px solid #533483;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #533483; }
+    button.active { background: #e94560; border-color: #e94560; }
+
+    .info {
+      margin-left: auto;
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      overflow: auto;
+    }
+
+    .panel-left {
+      flex: 3;
+      border-right: 2px solid #0f3460;
+    }
+
+    .panel-right {
+      flex: 1;
+      min-width: 220px;
+      gap: 12px;
+    }
+
+    .panel h2 {
+      font-size: 14px;
+      color: #e94560;
+      margin-bottom: 8px;
+    }
+
+    #editor-canvas {
+      cursor: crosshair;
+      image-rendering: pixelated;
+      border: 2px solid #533483;
+      background-image:
+        linear-gradient(45deg, #252525 25%, transparent 25%),
+        linear-gradient(-45deg, #252525 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #252525 75%),
+        linear-gradient(-45deg, transparent 75%, #252525 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+    }
+
+    #preview-canvas {
+      image-rendering: pixelated;
+      border: 2px solid #533483;
+      background: #05070a;
+    }
+
+    #original-preview {
+      image-rendering: pixelated;
+      border: 2px solid #0f3460;
+      max-width: 180px;
+    }
+
+    .legend {
+      font-size: 11px;
+      line-height: 1.6;
+      color: #bbb;
+      text-align: left;
+      width: 100%;
+      padding: 0 8px;
+    }
+
+    .legend kbd {
+      background: #0f3460;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 11px;
+      color: #fff;
+    }
+
+    .zoom-info {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🎨 NPC Sprite Editor</h1>
+  <div class="toolbar">
+    <button id="btn-keep" class="active" title="Marcar píxeles para MANTENER (verde)">✅ Mantener</button>
+    <button id="btn-erase" title="Marcar píxeles para BORRAR (rojo)">❌ Borrar</button>
+    <button id="btn-undo" title="Deshacer último trazo">↩ Deshacer</button>
+    <button id="btn-reset" title="Resetear todas las marcas">🔄 Reset</button>
+    <button id="btn-export" title="Exportar el sprite recortado como PNG">💾 Exportar PNG</button>
+  </div>
+  <div class="info" id="coords">Pixel: (-, -)</div>
+</header>
+
+<div class="workspace">
+  <div class="panel panel-left">
+    <h2>Editor (zoom 8x) — Pinta sobre el sprite</h2>
+    <canvas id="editor-canvas"></canvas>
+    <div class="zoom-info">Click izq: pintar | Click der + arrastrar: mover | Scroll: zoom</div>
+  </div>
+
+  <div class="panel panel-right">
+    <h2>Original</h2>
+    <img id="original-preview" src="./assets/ship-exit-npc.png">
+
+    <h2>Preview (resultado)</h2>
+    <canvas id="preview-canvas" width="128" height="161"></canvas>
+
+    <div class="legend">
+      <strong>Instrucciones:</strong><br>
+      1. Usa <kbd>Mantener</kbd> para pintar de verde los píxeles buenos del NPC.<br>
+      2. Usa <kbd>Borrar</kbd> para pintar de rojo los píxeles basura (fondo verde, bordes feos).<br>
+      3. Los píxeles <strong>sin marcar</strong> se mantienen tal cual están.<br>
+      4. Solo los píxeles marcados en rojo se vuelven transparentes.<br>
+      5. Haz click en <kbd>Exportar PNG</kbd> para guardar.<br>
+      6. El archivo se descarga como <code>ship-exit-npc.png</code>.<br>
+      7. Cópialo a <code>dashboard/assets/</code> y recarga el juego.<br>
+      <br>
+      <strong>Controles:</strong><br>
+      <kbd>K</kbd> = Modo Mantener<br>
+      <kbd>E</kbd> = Modo Borrar<br>
+      <kbd>Ctrl+Z</kbd> = Deshacer<br>
+      <kbd>Scroll</kbd> = Zoom in/out<br>
+    </div>
+  </div>
+</div>
+
+<script>
+const editorCanvas = document.getElementById('editor-canvas');
+const previewCanvas = document.getElementById('preview-canvas');
+const ectx = editorCanvas.getContext('2d');
+const pctx = previewCanvas.getContext('2d');
+const coordsEl = document.getElementById('coords');
+
+const btnKeep = document.getElementById('btn-keep');
+const btnErase = document.getElementById('btn-erase');
+const btnUndo = document.getElementById('btn-undo');
+const btnReset = document.getElementById('btn-reset');
+const btnExport = document.getElementById('btn-export');
+
+let mode = 'keep'; // 'keep' or 'erase'
+let zoom = 8;
+let panX = 0, panY = 0;
+let isPanning = false;
+let panStartX, panStartY;
+
+let sourceImage = null;
+let sourceData = null; // ImageData of the original
+let maskData = null;   // Uint8Array: 0 = untouched, 1 = keep, 2 = erase
+let undoStack = [];
+let painting = false;
+
+// Load the current NPC sprite
+const img = new Image();
+img.onload = () => {
+  sourceImage = img;
+  const w = img.width;
+  const h = img.height;
+
+  // Get pixel data from source
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = w;
+  tempCanvas.height = h;
+  const tctx = tempCanvas.getContext('2d');
+  tctx.drawImage(img, 0, 0);
+  sourceData = tctx.getImageData(0, 0, w, h);
+
+  // Initialize mask (all untouched)
+  maskData = new Uint8Array(w * h);
+
+  // Size editor canvas
+  resizeEditor();
+  renderEditor();
+  renderPreview();
+};
+img.src = './assets/ship-exit-npc.png?' + Date.now();
+
+function resizeEditor() {
+  if (!sourceImage) return;
+  editorCanvas.width = sourceImage.width * zoom;
+  editorCanvas.height = sourceImage.height * zoom;
+}
+
+function renderEditor() {
+  if (!sourceImage || !sourceData) return;
+  const w = sourceImage.width;
+  const h = sourceImage.height;
+
+  ectx.imageSmoothingEnabled = false;
+  ectx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
+
+  // Draw the original image scaled up
+  ectx.drawImage(sourceImage, 0, 0, w * zoom, h * zoom);
+
+  // Draw grid lines
+  ectx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ectx.lineWidth = 1;
+  for (let x = 0; x <= w; x++) {
+    ectx.beginPath();
+    ectx.moveTo(x * zoom, 0);
+    ectx.lineTo(x * zoom, h * zoom);
+    ectx.stroke();
+  }
+  for (let y = 0; y <= h; y++) {
+    ectx.beginPath();
+    ectx.moveTo(0, y * zoom);
+    ectx.lineTo(w * zoom, y * zoom);
+    ectx.stroke();
+  }
+
+  // Draw mask overlay
+  for (let i = 0; i < maskData.length; i++) {
+    if (maskData[i] === 0) continue;
+    const px = i % w;
+    const py = Math.floor(i / w);
+    if (maskData[i] === 1) {
+      // Keep: green overlay
+      ectx.fillStyle = 'rgba(0, 255, 100, 0.3)';
+    } else {
+      // Erase: red overlay with X
+      ectx.fillStyle = 'rgba(255, 40, 40, 0.45)';
+    }
+    ectx.fillRect(px * zoom, py * zoom, zoom, zoom);
+
+    if (maskData[i] === 2) {
+      // Draw small X
+      ectx.strokeStyle = 'rgba(255, 80, 80, 0.7)';
+      ectx.lineWidth = 1;
+      const m = 2;
+      ectx.beginPath();
+      ectx.moveTo(px * zoom + m, py * zoom + m);
+      ectx.lineTo((px + 1) * zoom - m, (py + 1) * zoom - m);
+      ectx.moveTo((px + 1) * zoom - m, py * zoom + m);
+      ectx.lineTo(px * zoom + m, (py + 1) * zoom - m);
+      ectx.stroke();
+    }
+  }
+}
+
+function renderPreview() {
+  if (!sourceData) return;
+  const w = sourceImage.width;
+  const h = sourceImage.height;
+
+  previewCanvas.width = w;
+  previewCanvas.height = h;
+  pctx.imageSmoothingEnabled = false;
+
+  const output = pctx.createImageData(w, h);
+  for (let i = 0; i < w * h; i++) {
+    const si = i * 4;
+    if (maskData[i] === 2) {
+      // Erased: fully transparent
+      output.data[si] = 0;
+      output.data[si + 1] = 0;
+      output.data[si + 2] = 0;
+      output.data[si + 3] = 0;
+    } else {
+      // Keep original pixel
+      output.data[si] = sourceData.data[si];
+      output.data[si + 1] = sourceData.data[si + 1];
+      output.data[si + 2] = sourceData.data[si + 2];
+      output.data[si + 3] = sourceData.data[si + 3];
+    }
+  }
+  pctx.putImageData(output, 0, 0);
+}
+
+function getPixelCoords(e) {
+  const rect = editorCanvas.getBoundingClientRect();
+  const x = Math.floor((e.clientX - rect.left) / (rect.width / editorCanvas.width) / zoom);
+  const y = Math.floor((e.clientY - rect.top) / (rect.height / editorCanvas.height) / zoom);
+  return { x, y };
+}
+
+function paintPixel(x, y) {
+  if (!sourceImage || x < 0 || y < 0 || x >= sourceImage.width || y >= sourceImage.height) return;
+  const idx = y * sourceImage.width + x;
+  const newVal = mode === 'keep' ? 1 : 2;
+  if (maskData[idx] !== newVal) {
+    maskData[idx] = newVal;
+  }
+}
+
+function saveUndoState() {
+  undoStack.push(new Uint8Array(maskData));
+  if (undoStack.length > 50) undoStack.shift();
+}
+
+function undo() {
+  if (undoStack.length === 0) return;
+  maskData = undoStack.pop();
+  renderEditor();
+  renderPreview();
+}
+
+// Mouse events
+editorCanvas.addEventListener('mousedown', (e) => {
+  if (e.button === 2) {
+    // Right click: pan
+    isPanning = true;
+    panStartX = e.clientX;
+    panStartY = e.clientY;
+    e.preventDefault();
+    return;
+  }
+  painting = true;
+  saveUndoState();
+  const { x, y } = getPixelCoords(e);
+  paintPixel(x, y);
+  renderEditor();
+  renderPreview();
+});
+
+editorCanvas.addEventListener('mousemove', (e) => {
+  const { x, y } = getPixelCoords(e);
+  coordsEl.textContent = `Pixel: (${x}, ${y})`;
+
+  if (painting) {
+    paintPixel(x, y);
+    renderEditor();
+    renderPreview();
+  }
+});
+
+editorCanvas.addEventListener('mouseup', (e) => {
+  painting = false;
+  isPanning = false;
+});
+
+editorCanvas.addEventListener('mouseleave', () => {
+  painting = false;
+  isPanning = false;
+});
+
+editorCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+// Zoom with scroll
+editorCanvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  if (e.deltaY < 0) {
+    zoom = Math.min(24, zoom + 1);
+  } else {
+    zoom = Math.max(2, zoom - 1);
+  }
+  resizeEditor();
+  renderEditor();
+});
+
+// Buttons
+btnKeep.addEventListener('click', () => {
+  mode = 'keep';
+  btnKeep.classList.add('active');
+  btnErase.classList.remove('active');
+});
+
+btnErase.addEventListener('click', () => {
+  mode = 'erase';
+  btnErase.classList.add('active');
+  btnKeep.classList.remove('active');
+});
+
+btnUndo.addEventListener('click', undo);
+
+btnReset.addEventListener('click', () => {
+  if (!maskData) return;
+  saveUndoState();
+  maskData.fill(0);
+  renderEditor();
+  renderPreview();
+});
+
+btnExport.addEventListener('click', () => {
+  if (!sourceData) return;
+  renderPreview();
+
+  // Find tight bounding box of non-transparent pixels in preview
+  const w = previewCanvas.width;
+  const h = previewCanvas.height;
+  const data = pctx.getImageData(0, 0, w, h);
+  let minX = w, minY = h, maxX = 0, maxY = 0;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const a = data.data[(y * w + x) * 4 + 3];
+      if (a > 0) {
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+
+  // Crop to tight bbox
+  const cropW = maxX - minX + 1;
+  const cropH = maxY - minY + 1;
+  const cropCanvas = document.createElement('canvas');
+  cropCanvas.width = cropW;
+  cropCanvas.height = cropH;
+  const cctx = cropCanvas.getContext('2d');
+  cctx.drawImage(previewCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
+
+  // Download
+  const link = document.createElement('a');
+  link.download = 'ship-exit-npc.png';
+  link.href = cropCanvas.toDataURL('image/png');
+  link.click();
+
+  alert(`Exportado: ${cropW}x${cropH}px\n\nCopia el archivo descargado a:\ndashboard/assets/ship-exit-npc.png\n\nLuego actualiza en game.js:\nshipNpcCrop.cropW = ${cropW}\nshipNpcCrop.cropH = ${cropH}\n\nY recarga el juego.`);
+});
+
+// Keyboard shortcuts
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'k' || e.key === 'K') {
+    btnKeep.click();
+  } else if (e.key === 'e' || e.key === 'E') {
+    btnErase.click();
+  } else if (e.ctrlKey && e.key === 'z') {
+    e.preventDefault();
+    undo();
+  }
+});
+</script>
+
+</body>
+</html>

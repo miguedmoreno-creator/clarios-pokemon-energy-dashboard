@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OSINT Quest - Iran vs EUU</title>
+    <link rel="stylesheet" href="./styles.css?v=june1-premium-underwater-v12" />
+  </head>
+  <body>
+    <!-- Premium Rock Secreto Popup Overlay (vector-sharp and perfectly legible under any zoom) -->
+    <div id="rock-popup" class="rock-popup-overlay" hidden>
+      <div class="rock-popup-content">
+        <button id="rock-popup-close" class="rock-popup-close-btn" aria-label="Cerrar ventana">X</button>
+        <div class="rock-popup-body">
+          <img id="rock-popup-img" class="rock-popup-graphic" src="" alt="Gráfica de secreto de la cueva" />
+          <p id="rock-popup-text" class="rock-popup-text-content"></p>
+        </div>
+      </div>
+    </div>
+ 
+    <main class="game-shell">
+      <section class="game-panel" aria-label="Mapa jugable OSINT Quest">
+        <canvas id="game" width="960" height="576"></canvas>
+        <div id="status" hidden>Listo</div>
+      </section>
+    </main>
+ 
+    <script>
+      window.onerror = function(message, source, lineno, colno, error) {
+        const div = document.createElement('div');
+        div.style.position = 'fixed';
+        div.style.top = '10px';
+        div.style.left = '10px';
+        div.style.right = '10px';
+        div.style.background = 'rgba(255, 0, 0, 0.9)';
+        div.style.color = 'white';
+        div.style.padding = '15px';
+        div.style.zIndex = '99999';
+        div.style.fontFamily = 'monospace';
+        div.style.whiteSpace = 'pre-wrap';
+        div.innerHTML = '<strong>Error:</strong> ' + message + '<br>Line: ' + lineno + '<br>Source: ' + source;
+        document.body.appendChild(div);
+      };
+    </script>
+    <script src="./game.js?v=june1-premium-underwater-v12"></script>
+  </body>
+</html>

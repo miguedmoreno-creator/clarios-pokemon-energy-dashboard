@@ -1,0 +1,213 @@
+@font-face {
+  font-family: 'PokemonGB';
+  src: url('./assets/Pokemon_GB.ttf') format('truetype');
+}
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+body {
+  font-family: "Trebuchet MS", Verdana, sans-serif;
+}
+
+.game-shell,
+.game-panel {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+.game-panel {
+  overflow: hidden;
+  background: #000;
+}
+
+canvas {
+  position: fixed;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+/* Premium Rock Popup Overlay (vector-sharp and perfectly legible under any zoom) */
+.rock-popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: none; /* hidden by default */
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 8, 16, 0.72);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.22s ease-out;
+}
+
+.rock-popup-overlay.active {
+  display: flex; /* display only when active */
+}
+
+.rock-popup-content {
+  position: relative;
+  width: 85vw;
+  max-width: 800px;
+  height: 80vh;
+  max-height: 520px;
+  background: #fbdfc3; /* GBA warm peach */
+  border: 6px solid #7fc4df;
+  border-radius: 16px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  padding: 32px 24px 24px 24px;
+  overflow: hidden;
+  animation: scaleUp 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.rock-popup-content::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 3px solid #d6f0fb;
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.rock-popup-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 10;
+  width: 32px;
+  height: 32px;
+  background: #ff4d4d;
+  color: #fff;
+  border: 2.5px solid #fff;
+  border-radius: 50%;
+  font-family: "Trebuchet MS", sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s, background-color 0.2s;
+}
+
+.rock-popup-close-btn:hover {
+  background: #ff3333;
+  transform: scale(1.08);
+}
+
+.rock-popup-close-btn:active {
+  transform: scale(0.95);
+}
+
+.rock-popup-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Custom scrollbar for premium GBA styled view */
+.rock-popup-body::-webkit-scrollbar {
+  width: 8px;
+}
+.rock-popup-body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+.rock-popup-body::-webkit-scrollbar-thumb {
+  background: #7fc4df;
+  border-radius: 4px;
+}
+
+.rock-popup-graphic {
+  max-width: 100%;
+  max-height: 72%; /* Enlarged significantly to occupy more screen space for absolute legibility! */
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: #fff;
+  padding: 8px;
+}
+
+.rock-popup-dual-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.rock-popup-dual-container img {
+  max-width: 48%;
+  max-height: 280px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: #fff;
+  padding: 6px;
+}
+
+.rock-popup-text-content {
+  margin: 0;
+  font-family: 'PokemonGB', monospace;
+  font-size: 13px;
+  line-height: 1.8;
+  color: #1b252d;
+  text-align: left;
+  width: 100%;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  padding: 8px 12px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Non-blocking ship-mode styles for walking-triggered popups in warship corridor */
+.rock-popup-overlay.ship-mode {
+  background: rgba(4, 8, 16, 0.28); /* light transparency so hallway remains visible */
+  align-items: flex-start; /* align popup to top */
+  padding-top: 18px;
+  pointer-events: none; /* allow keys and clicks to pass through to canvas so they can walk! */
+}
+
+.rock-popup-overlay.ship-mode .rock-popup-content {
+  pointer-events: auto; /* restore events for the scrollable container if needed */
+  height: 70vh; /* Taller overlay to fit larger charts! */
+  max-height: 440px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}

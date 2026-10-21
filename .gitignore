@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+.npm/
+
+# Tools & binaries
+tools/
+*.zip
+
+# Local Vercel
+.vercel
+
+# Python cache & temp
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+scratch/

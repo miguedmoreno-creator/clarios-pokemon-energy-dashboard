@@ -1,0 +1,402 @@
+﻿* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0b0f19;
+  color: #e2e8f0;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.canvas-wrap {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  background: radial-gradient(circle at center, #151d2f 0%, #07090e 100%);
+}
+
+#gameCanvas {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 30px rgba(0,240,255,0.15);
+  border: 2px solid rgba(0,240,255,0.3);
+  border-radius: 8px;
+}
+
+/* ===== HUD POSICION ===== */
+.hud-container {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.hud-card {
+  background: rgba(13,17,28,0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0,240,255,0.3);
+  border-radius: 10px;
+  padding: 14px 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,240,255,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hud-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #00ff88;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #00ff88;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.hud-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: #00f0ff;
+  letter-spacing: 1px;
+}
+
+.hud-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-item {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.label {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.value {
+  color: #f8fafc;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+/* ===== BOTON TOGGLE PANEL ===== */
+.toggle-npc-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 200;
+  background: rgba(13,17,28,0.9);
+  border: 1px solid rgba(0,240,255,0.4);
+  border-radius: 8px;
+  color: #00f0ff;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4), 0 0 10px rgba(0,240,255,0.1);
+}
+
+.toggle-npc-btn:hover {
+  background: rgba(0,240,255,0.12);
+  border-color: rgba(0,240,255,0.8);
+  box-shadow: 0 4px 20px rgba(0,240,255,0.25);
+  transform: translateY(-1px);
+}
+
+/* ===== PANEL LISTA DE NPCs ===== */
+.npc-list-panel {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  z-index: 150;
+  width: 280px;
+  background: rgba(10,14,26,0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(0,240,255,0.25);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 20px rgba(0,240,255,0.08);
+  transform-origin: top right;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.npc-list-panel.hidden-panel {
+  opacity: 0;
+  transform: scale(0.92);
+  pointer-events: none;
+}
+
+.npc-list-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.npc-list-icon {
+  font-size: 16px;
+}
+
+.npc-list-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #00f0ff;
+  letter-spacing: 0.5px;
+}
+
+.npc-list-subtitle {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 14px;
+  margin-top: 2px;
+}
+
+.npc-list-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.npc-list-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(0,240,255,0.15);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  color: #e2e8f0;
+  text-align: left;
+  transition: all 0.2s ease;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.npc-list-btn::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0;
+  width: 3px; height: 100%;
+  background: #00f0ff;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.npc-list-btn:hover {
+  background: rgba(0,240,255,0.07);
+  border-color: rgba(0,240,255,0.4);
+  transform: translateX(-2px);
+}
+
+.npc-list-btn:hover::before {
+  opacity: 1;
+}
+
+.npc-list-btn.active-npc {
+  background: rgba(0,240,255,0.1);
+  border-color: rgba(0,240,255,0.6);
+}
+
+.npc-list-btn.active-npc::before {
+  opacity: 1;
+  background: #00ff88;
+}
+
+.npc-list-btn.visited-npc {
+  border-color: rgba(0,255,136,0.4);
+}
+
+.npc-list-btn.visited-npc::before {
+  opacity: 0.6;
+  background: #00ff88;
+}
+
+.npc-btn-canvas {
+  image-rendering: pixelated;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.npc-btn-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.npc-btn-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: #f1f5f9;
+}
+
+.npc-btn-role {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.npc-btn-arrow {
+  color: #00f0ff;
+  font-size: 16px;
+  opacity: 0.5;
+  transition: opacity 0.2s, transform 0.2s;
+  flex-shrink: 0;
+}
+
+.npc-list-btn:hover .npc-btn-arrow {
+  opacity: 1;
+  transform: translateX(3px);
+}
+
+/* ===== DIALOGO NPC ===== */
+.npc-dialog {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  width: min(680px, 95vw);
+  background: rgba(8,12,22,0.97);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0,240,255,0.35);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.6), 0 0 30px rgba(0,240,255,0.12);
+  animation: slideUp 0.3s ease;
+}
+
+.npc-dialog.hidden {
+  display: none;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.npc-dialog-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.npc-dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+#npc-dialog-avatar {
+  image-rendering: pixelated;
+  border-radius: 8px;
+  border: 2px solid rgba(0,240,255,0.3);
+  flex-shrink: 0;
+}
+
+.npc-dialog-titles {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.npc-dialog-name {
+  font-weight: 800;
+  font-size: 16px;
+  color: #00f0ff;
+}
+
+.npc-dialog-role {
+  font-size: 11px;
+  color: #64748b;
+  font-style: italic;
+}
+
+.npc-dialog-close {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  color: #94a3b8;
+  font-size: 14px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.npc-dialog-close:hover {
+  background: rgba(255,80,80,0.15);
+  border-color: rgba(255,80,80,0.4);
+  color: #ff5050;
+}
+
+.npc-dialog-text {
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.65;
+  padding: 12px 14px;
+  background: rgba(0,240,255,0.04);
+  border-left: 3px solid rgba(0,240,255,0.4);
+  border-radius: 0 8px 8px 0;
+}
+
+/* ===== GRAFICA NPC ===== */
+.npc-dialog-chart {
+  background: rgba(5,8,18,0.9);
+  border: 1px solid rgba(0,240,255,0.2);
+  border-radius: 12px;
+  padding: 16px;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chart-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #00f0ff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.chart-canvas-wrap {
+  flex: 1;
+  position: relative;
+}
+
+.chart-canvas-wrap canvas {
+  width: 100%;
+  height: 180px;
+}
